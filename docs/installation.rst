@@ -80,6 +80,12 @@ For PODAAC downloads, set the following:
       machine urs.earthdata.nasa.gov
           login your-username
           password your-password
+    
+    Set the permissions to 600:
+
+    .. code-block:: bash
+
+       chmod 600 ~/.netrc
 
 Troubleshooting
 -------------
