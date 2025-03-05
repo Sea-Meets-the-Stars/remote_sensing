@@ -5,6 +5,51 @@ import xarray
 
 from . import sst
 
+lat_coords = ['lat', 'latitude']
+lon_coords = ['lon', 'longitude']
+
+def find_coord(ds:xarray.Dataset, coord:str):
+
+    if coord == 'lat':
+        coords = lat_coords
+    elif coord == 'lon':
+        coords = lon_coords
+    else:
+        raise IOError(f"Bad coord {coord}")
+
+    for icoord in coords:
+        if icoord in ds.coords:
+            return icoord
+
+    # If we get here, we failed to find the coordinate
+    return None
+            
+
+def find_variable(ds:xarray.Dataset, 
+                  vtype:str,
+                  verbose:bool=False):
+    """
+    Find the SST variable in the dataset
+
+    Parameters
+    ----------
+    ds : xarray.Dataset
+    verbose : bool, optional
+
+    Returns
+    -------
+    str or None
+        Variable name
+    """
+
+    # Check for SST
+    if vtype == 'sst':
+        return sst.find_variable(ds, verbose=verbose)
+    else:
+        raise IOError("Bad vtype")
+
+    return None
+
 def gen_mask_for_dataset(ds:xarray.Dataset, variable:str):
     """
     Generate a mask for a dataset based on a variable.
@@ -24,7 +69,7 @@ def gen_mask_for_dataset(ds:xarray.Dataset, variable:str):
     mask = None
 
     # Quality control
-    if variable in ['sea_surface_temperature', 'analysed_sst']:
+    if variable in sst.variables:
         mask = sst.quality_control(ds)
     
     return mask

@@ -4,6 +4,8 @@ import xarray
 import pandas
 
 from remote_sensing import units 
+    
+variables = ['sea_surface_temperature', 'analysed_sst']
 
 def find_variable(ds, verbose:bool=False):
     """

@@ -24,7 +24,7 @@ setup_keywords['install_requires'] = [
     'seaborn', 'pyarrow', 'scikit-learn', 'scikit-image', 'tqdm', 
     'cftime', 'bokeh', 'xarray', 'h5netcdf', 
     'healpy', 'copernicusmarine',  
-    'importlib-metadata', 
+    'importlib-metadata', 'netcdf4', 
     'podaac-data-subscriber',
     'pytest', 'simplekml']
 setup_keywords['zip_safe'] = False

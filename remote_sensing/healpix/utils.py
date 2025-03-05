@@ -51,15 +51,16 @@ def get_nside_from_angular_size(angular_size_deg):
 # nside, pixel_size = get_nside_from_angular_size(angular_size)
 # print(f"For {angular_size}° resolution, use NSIDE={nside} (actual pixel size: {pixel_size:.2f}°)")
 
-def get_nside_from_dataset(ds:xarray.Dataset):
+def get_nside_from_lats(lats:np.ndarray):
     """
-    Find the appropriate HEALPix NSIDE parameter for a given xarray Dataset.
+    Find the appropriate HEALPix NSIDE parameter for a given xarray Dataset
+    using the latitutdes
+
     Returns the NSIDE value that gives pixel sizes just smaller than the smallest pixel size in the dataset.
     
     Parameters:
     -----------
-    ds : xarray.Dataset
-        Dataset containing HEALPix data
+    lats : np.ndarray
         
     Returns:
     --------
@@ -68,25 +69,34 @@ def get_nside_from_dataset(ds:xarray.Dataset):
     actual_pixel_size : float
         Actual pixel size in degrees for the returned NSIDE
     """
+    if lats.ndim != 1:
+        raise ValueError("We expect a 1D array of latitudes")
     
     # Find the median latitude setp size
-    delta_lat = np.nanmedian(np.diff(ds.lat))
+    delta_lat = np.abs(np.nanmedian(np.diff(lats)))
 
     # nside
     return get_nside_from_angular_size(delta_lat)
 
 
 
-def da_to_healpix(da:xarray.DataArray, 
-                  stat:str='mean',
-                  nside:int=None):
+def arrays_to_healpix(lat:np.ndarray, 
+                      lon:np.ndarray, 
+                      vals:np.ndarray, 
+                      stat:str='mean', 
+                      nside:int=None):
     """
     Generate a healpix map of where the input
     MHW Systems are located on the globe
 
     Parameters
     ----------
-    da : xa.DataArray
+    lat : np.ndarray
+        Latitude array
+    lon : np.ndarray
+        Longitude array
+    vals : np.ndarray
+        Values to map
     stat : str, optional
         Statistic to calculate. Default is 'mean'
     nside : int, optional
@@ -104,12 +114,12 @@ def da_to_healpix(da:xarray.DataArray,
         raise IOError("stat != 'mean' not implemented yet")
 
     # Unpack
-    if da.lat.ndim == 2:
-        lats = da.lat.values
-        lons = da.lon.values
-    elif da.lat.ndim == 1:
+    if lat.ndim == 2:
+        lats = lat
+        lons = lon
+    elif lat.ndim == 1:
         # Convert to 2D
-        lons, lats = np.meshgrid(da.lon.values, da.lat.values)
+        lons, lats = np.meshgrid(lon, lat)
     else:
         raise ValueError("Bad lat/lon shape")
 
@@ -119,11 +129,11 @@ def da_to_healpix(da:xarray.DataArray,
 
     # Pixels
     if nside is None:
-        nside, _ = get_nside_from_dataset(da)
+        nside, _ = get_nside_from_lats(lat)
     npix_hp = healpy.nside2npix(nside)
     
     # Deal with NaNs
-    vals = da.data.flatten()
+    vals = vals.flatten()
     finite = np.isfinite(vals)
 
     # 
@@ -202,4 +212,26 @@ def masked_in_box(hp:healpy.ma, box:tuple):
     # Done
     return np.where(masked)[0]
 
-    
+def check_masked(hp:healpy.ma, lons:np.ndarray, lats:np.ndarray):
+    """ Check whether the HealPIX is masked at the input locations
+
+    Args:
+        hp (healpy.ma): _description_
+        lons (np.ndarray): _description_
+        lats (np.ndarray): _description_
+
+    Returns:
+        np.ndarray: True = masked
+    """
+
+    nside = healpy.npix2nside(hp.size)
+
+    # Healpix coords
+    theta = (90 - lats) * np.pi / 180. 
+    phi = lons * np.pi / 180.
+
+    idx = healpy.pixelfunc.ang2pix(
+        nside, theta, phi) 
+
+    # Check 
+    return hp.mask[idx]

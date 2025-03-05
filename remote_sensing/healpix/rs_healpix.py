@@ -7,6 +7,7 @@ import os
 import numpy as np
 import healpy
 import xarray
+import pandas
 
 from remote_sensing.healpix import utils as hp_utils 
 from remote_sensing.plotting import globe
@@ -134,27 +135,34 @@ class RS_Healpix(object):
 
         """
         nside = None
+        # Load
         ds = xarray.open_dataset(filename)
-        if ds.lat.ndim == 1:
+
+        # Grab the coords
+        lat = nc_utils.find_coord(ds, 'lat')
+        lon = nc_utils.find_coord(ds, 'lon')
+
+        if ds[lat].ndim == 1:
             if lat_slice is not None:
-                ds = ds.sel(lat=lat_slice)
+                #embed(header='Check lat_slice')
+                ds = ds.sel({lat: lat_slice})
             if lon_slice is not None:
-                ds = ds.sel(lon=lon_slice)
-        if ds.lat.ndim == 2:
+                ds = ds.sel({lon: lon_slice})
+        if ds[lat].ndim == 2:
             # Deal with junk
-            junk = ds.lat < -1000.
-            ds.lat.data[junk] = np.nan
+            junk = ds[lat] < -1000.
+            ds[lat].data[junk] = np.nan
             #
-            junk = ds.lon < -1000.
-            ds.lon.data[junk] = np.nan
+            junk = ds[lon] < -1000.
+            ds[lon].data[junk] = np.nan
 
             # Cut with NaNs
             if lat_slice is not None:
-                junk = (ds.lat < lat_slice[0]) | (ds.lat > lat_slice[1])
-                ds.lat.data[junk] = np.nan
+                junk = (ds[lat] < lat_slice[0]) | (ds[lat] > lat_slice[1])
+                ds[lat].data[junk] = np.nan
             if lon_slice is not None:
-                junk = (ds.lon < lon_slice[0]) | (ds.lon > lon_slice[1])
-                ds.lon.data[junk] = np.nan
+                junk = (ds[lon] < lon_slice[0]) | (ds[lon] > lon_slice[1])
+                ds[lon].data[junk] = np.nan
             # nside 
             if resol_km is None:
                 raise ValueError("Must provide resol_km for 2D lat/lon arrays")
@@ -205,12 +213,26 @@ class RS_Healpix(object):
         """
         reload(hp_utils)
 
+        # Unpack
+        # Grab the coords
+        lat = nc_utils.find_coord(da, 'lat')
+        lon = nc_utils.find_coord(da, 'lon')
+        try:
+            lat = da[lat].data
+        except:
+            embed(header='Check lat')
+        lon = da[lon].data
+
         
         hp_counts, hp_values, hp_lons, hp_lats, nside = \
-            hp_utils.da_to_healpix(da, nside=nside)
+            hp_utils.arrays_to_healpix(
+                lat, lon, da.data, nside=nside)
 
         # Instantiate
         rsh = cls(nside)
+
+        # Time
+        rsh.time = pandas.to_datetime(da.time.data)
 
         # Fill
         rsh.hp = hp_values
@@ -218,6 +240,7 @@ class RS_Healpix(object):
 
         # Return
         return rsh
+
 
     def fill_in(self, rs_hp, bbox:tuple):
         """
@@ -249,7 +272,40 @@ class RS_Healpix(object):
         
     def plot(self, **kwargs):
         """ Plot the HEALPix map. """
-        return globe.plot_lons_lats_vals(self.lons, self.lats, self.hp, **kwargs)
+        return globe.plot_lons_lats_vals(
+            self.lons, self.lats, self.hp, **kwargs)
+
+    def save_to_nc(self, outfile:str,
+                   full_healpix:bool=True):
+        """ Save the HEALPix map to a NetCDF file. """
+
+        # Reduce
+        if full_healpix:
+            good = np.ones_like(self.hp.data, dtype=bool)
+        else:
+            good = ~self.hp.mask
+
+        # Create the dataset
+        da = xarray.DataArray(
+            data=self.hp.data[good].astype(np.float32),
+            coords={
+                'healpix': np.arange(self.hp.data.size)[good],  # Index coordinate
+                'lat': ('healpix', self.lats[good].astype(np.float32)),
+                'lon': ('healpix', self.lons[good].astype(np.float32))
+            },
+            dims=['healpix'],
+            name='sea_surface_temperature',
+            attrs={
+                'units': '°C',
+                'long_name': 'Sea Surface Temperature',
+                'standard_name': 'sea_surface_temperature'
+            }
+        )
+
+        # Save with encoding
+        da.to_netcdf(outfile)
+            #encoding={'sea_surface_temperature': {'zlib': True}})
+        print(f"Saved to {outfile}")
         
 
     def __repr__(self):

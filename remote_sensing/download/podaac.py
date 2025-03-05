@@ -9,10 +9,11 @@ import os
 
 from datetime import datetime, timedelta, timezone
 
-from subscriber.podaac_data_downloader import main
 from subscriber import podaac_access as pa
 
 from urllib.error import HTTPError
+
+from remote_sensing.download import utils as down_utils
 
 from IPython import embed
 
@@ -71,24 +72,13 @@ def grab_file_list(collection:str,
 
 
     # Times
+    start_datetime, end_datetime = down_utils.find_startend_datetime(
+        time_range, t_end, dt_past)
+
+    # Temporal range
     now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    if time_range is None:
-        if dt_past is None:
-            dt_past = dict(days=1)
-        if t_end is None:
-            t_end = now
-
-        # Convert t_start to datetime
-        dtend = datetime.strptime(t_end, "%Y-%m-%dT%H:%M:%SZ")
-    
-        start_date_time = dtend - timedelta(**dt_past)
-        start_date_time = start_date_time.strftime("%Y-%m-%dT%H:%M:%SZ")
-        end_date_time = t_end
-    else:
-        start_date_time, end_date_time = time_range
-
     temporal_range = pa.get_temporal_range(
-        start_date_time, end_date_time, now)
+        start_datetime, end_datetime, now)
     params = [
             ('page_size', page_size),
             ('sort_key', "-start_date"),

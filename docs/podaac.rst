@@ -40,3 +40,11 @@ improved clear-sky mask.
 
 `Read more here <https://podaac.jpl.nasa.gov/announcements/2023-11-16-NOAA-GHRSST-L2P/L3U-N21/VIIRS-sub-skin-SST-v2.80-datasets>``
 
+
+SSH
+---
+
+SWOT
+++++
+
+`SWOT_L2_LR_SSH_EXPERT_2.0 <https://podaac.jpl.nasa.gov/dataset/SWOT_L2_LR_SSH_EXPERT_2.0#>`

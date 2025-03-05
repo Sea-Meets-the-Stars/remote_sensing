@@ -2,6 +2,7 @@
 SST sources (microwave and IR)
 
 This example was used for the ARCTERX 2025, Leg 2"""
+import os
 
 import xarray
 import argparse
@@ -16,6 +17,8 @@ from IPython import embed
 # Globals
 lon_lim = (127.,134)
 lat_lim = (18.,23)
+#lon_lim = (129.,132)
+#lat_lim = (19.,22.5)
 
 def main(args):
 
@@ -58,6 +61,14 @@ def main(args):
     ds = xarray.open_dataset(sdict['local_h09'][0])
     time_root = str(ds.time.data[0]).replace(':','')[0:13]
 
+    # Outfile
+    outfile = f'Merged_SST_{time_root}.kmz'
+
+    # Skip if exists and not --clobber
+    if os.path.exists(os.path.join(args.outdir, outfile)) and not args.clobber:
+        print(f"{outfile} exists.  Use --clobber to overwrite")
+        return
+
     if args.use_json is None:
         # Save files to a JSON file
         json_file = f'Merged_SST_{time_root}.json'
@@ -86,6 +97,11 @@ def main(args):
         print(f"Generated RS_Healpix from {data_file}")
         # Add
         amsr2_hpxs.append(rs_hpx)
+
+    if args.debug:
+        #pass
+        #embed(header='93 of gen')
+        rs_hpx.save_to_nc('test.nc', full_healpix=False)
 
     # Combine?
     if args.namsr2 > 1:
@@ -149,12 +165,20 @@ def main(args):
     rs_kml.colorbar(img, 'SST (C)', 'colorbar.png')
 
     # Write
-    outfile = f'Merged_SST_{time_root}.kmz'
     rs_kml.make_kml(llcrnrlon=lon_lim[0], llcrnrlat=lat_lim[0],
         urcrnrlon=lon_lim[1], urcrnrlat=lat_lim[1],
         figs=['kml_test.png'], colorbar='colorbar.png',
-        kmzfile=outfile, name='Merged SST')
+        kmzfile=os.path.join(args.outdir,outfile), 
+        name='Merged SST')
     print(f"Generated: {outfile}")
+
+    # NetCDF ?
+    if args.create_nc:
+        outfile = outfile.replace('.kmz', '.nc')
+        # Save to netCDF
+        h09_stack.save_to_nc(
+            os.path.join(args.outdir, outfile),
+            full_healpix=False)
 
 
 def parse_option():
@@ -173,8 +197,12 @@ def parse_option():
                         default=2, help="Number of days into the past to consdier for images")
     parser.add_argument("--t_end", type=str, 
                         help="End time, ISO format e.g. 2025-02-07T04:00:00Z")
+    parser.add_argument("--outdir", type=str, default='./',
+                        help="Output directory")
     parser.add_argument('--debug', default=False, action='store_true',
                         help='Debug?')
+    parser.add_argument('-n', '--create_nc', default=False, action='store_true',
+                        help='Create netCDF file too?')
     parser.add_argument('-s', '--show', default=False, action='store_true',
                         help='show extra plots?')
     parser.add_argument('--verbose', default=False, action='store_true',

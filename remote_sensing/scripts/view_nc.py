@@ -16,6 +16,8 @@ def parser(options=None):
     parser.add_argument("--projection", type=str, default='mollweide', help="Projection for the plot; (mollweide, platecarree)")
     parser.add_argument("--ssize", type=float, default=1., help="Size of the points")
     parser.add_argument("--cmap", type=str, help="Color map")
+    parser.add_argument("--vmin", type=float, help="Lower bound of the colorbar")
+    parser.add_argument("--vmax", type=float, help="Lower bound of the colorbar")
 
     parser.add_argument("--itime", type=int, default=0, help="Time index to view, if applicable")
 
@@ -38,6 +40,10 @@ def show_one(one_file:str, pargs):
 
     # Load 
     ds = xarray.open_dataset(one_file)
+
+    # Grab the coords
+    lat = nc_utils.find_coord(ds, 'lat')
+    lon = nc_utils.find_coord(ds, 'lon')
 
     # Grab the variable
     found_it = False
@@ -65,21 +71,22 @@ def show_one(one_file:str, pargs):
     # Time?
     if 'time' in da.dims:
         da = da.isel(time=pargs.itime)
+        
 
     # Unpack
-    if da.lat.ndim == 2:
+    if da[lat].ndim == 2:
         # Going to Healpix
-        lats = da.lat.values
-        lons = da.lon.values
-    elif da.lat.ndim == 1:
-        if da.lat[0] > da.lat[1]:
+        lats = da[lat].values
+        lons = da[lon].values
+    elif da[lat].ndim == 1:
+        if da[lat][0] > da[lat][1]:
             lat_slice = slice(pargs.lat_max, pargs.lat_min)
         else:
             lat_slice = slice(pargs.lat_min, pargs.lat_max)
         lon_slice = slice(pargs.lon_min, pargs.lon_max)
 
         # 
-        da = da.sel(lat=lat_slice, lon=lon_slice)
+        da = da.sel({lat:lat_slice, lon:lon_slice})
         da.plot()
         # Fuss
         fig = plt.gcf()
@@ -121,9 +128,14 @@ def show_one(one_file:str, pargs):
     kwargs['ssize'] = pargs.ssize
     if pargs.cmap is not None:
         kwargs['cmap'] = pargs.cmap
+    if pargs.vmin is not None:
+        kwargs['vmin'] = pargs.vmin
+    if pargs.vmax is not None:
+        kwargs['vmax'] = pargs.vmax
 
     # Plot
-    ax, im = globe.plot_lons_lats_vals(lons, lats, vals, **kwargs)
+    ax, im = globe.plot_lons_lats_vals(
+        lons, lats, vals, **kwargs)
 
 
 def main(pargs):
