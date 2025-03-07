@@ -132,7 +132,19 @@ def png_to_kml(input_file, output_file, var_name, vmin, vmax, cmap='viridis'):
     kml.save(output_file)
 
 
-def scatter_to_kml_advanced(lon, lat, colors=None, sizes=None, labels=None, output_file='output.kml'):
+def scatter_to_kml_advanced(lon:np.ndarray, lat:np.ndarray, colors=None, 
+                            sizes=None, labels=None, 
+                            output_file='output.kml'):
+    """ Scatter plot to KML file with advanced styling options.
+
+    Args:
+        lon (np.ndarray): Array of longitudes
+        lat (np.ndarray): Array of latitudes
+        colors (list): List of colors for each point
+        sizes (list): List of sizes for each point
+        labels (list): List of labels for each point
+        output_file (str): Output KML file
+    """
     kml = simplekml.Kml()
     
     for i, (lo, la) in enumerate(zip(lon, lat)):
@@ -151,3 +163,4 @@ def scatter_to_kml_advanced(lon, lat, colors=None, sizes=None, labels=None, outp
         pnt.style.iconstyle.icon.href = 'http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png'
         
     kml.save(output_file)
+    print(f"Saved {output_file}")
