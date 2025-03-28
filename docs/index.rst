@@ -15,7 +15,9 @@ Features
 
 * HEALPix map processing and visualization
 * Sea Surface Temperature (SST) data handling
+* Sea Surface Height (SSH) data access and processing
 * PODAAC data downloading interface
+* Copernicus Marine data integration
 * Global map visualization tools
 * KML file generation for Google Earth
 * Comprehensive I/O utilities
@@ -45,6 +47,7 @@ Contents
 
    api/healpix
    api/sst
+   api/ssh
    api/visualization
    api/download
    api/io
