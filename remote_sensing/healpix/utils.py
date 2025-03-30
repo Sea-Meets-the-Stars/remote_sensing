@@ -83,11 +83,12 @@ def get_nside_from_lats(lats:np.ndarray):
 def arrays_to_healpix(lat:np.ndarray, 
                       lon:np.ndarray, 
                       vals:np.ndarray, 
+                      not_gridded:bool=False,
                       stat:str='mean', 
                       nside:int=None):
     """
-    Generate a healpix map of where the input
-    MHW Systems are located on the globe
+    Given a set of latitudes, longitudes, and values, 
+    map the values to a HEALPix grid.
 
     Parameters
     ----------
@@ -102,19 +103,22 @@ def arrays_to_healpix(lat:np.ndarray,
     nside : int, optional
         HEALPix NSIDE parameter. Default is None
         If None, the NSIDE is calculated from the input data
+    not_gridded : bool, optional
+        If True, the input data is not gridded. Default is False
     
     Returns
     -------
     healpix_array : healpy.ma (number of items contributing)
     healpix_array : healpy.ma1 (combined statistic)
-    lats : np.ndarray
-    lons : np.ndarray
+    lats : np.ndarray -- HEALPix latitudes
+    lons : np.ndarray -- HEALPix longitudes
+    nside : int -- HEALPix NSIDE parameter
     """
     if stat != 'mean':
         raise IOError("stat != 'mean' not implemented yet")
 
     # Unpack
-    if lat.ndim == 2:
+    if lat.ndim == 2 or not_gridded:
         lats = lat
         lons = lon
     elif lat.ndim == 1:
