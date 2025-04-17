@@ -63,7 +63,7 @@ For PODAAC downloads:
 
 For Copernicus downloads:
 
-`Copernicus marine package <https://pypi.org/project/copernicusmarine/>`
+`Copernicus marine package <https://pypi.org/project/copernicusmarine/>`_
 
 Environment Variables
 ------------------
