@@ -13,7 +13,7 @@ Python
 To download data from Copernicus Marine, you 
 will need the 
 
-`Copernicus marine package <https://pypi.org/project/copernicusmarine/>`
+`Copernicus marine package <https://pypi.org/project/copernicusmarine/>`_
 
 and will need to set the following environment variables:
 
