@@ -19,6 +19,13 @@ Contents
 
 .. toctree::
    :maxdepth: 2
+   :caption: Public datasets
+
+   copernicus
+   podaac
+
+.. toctree::
+   :maxdepth: 2
    :caption: API Reference
 
    api/healpix

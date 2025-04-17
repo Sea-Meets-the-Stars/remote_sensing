@@ -15,6 +15,13 @@ will need the
 
 `Copernicus marine package <https://pypi.org/project/copernicusmarine/>`
 
+and will need to set the following environment variables:
+
+```bash
+export COPERNICUSMARINE_SERVICE_USERNAME=your_username
+export COPERNICUSMARINE_SERVICE_PASSWORD=your_password
+```
+
 SSH
 ---
 
