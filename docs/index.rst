@@ -5,30 +5,6 @@
 .. _bibtex:
 
 
-Remote Sensing
-==============
-
-A Python package for processing and analyzing remote sensing data, with a focus on sea surface temperature (SST) data and HEALPix mapping.
-
-Features
---------
-
-* HEALPix map processing and visualization
-* Sea Surface Temperature (SST) data handling
-* Sea Surface Height (SSH) data access and processing
-* PODAAC data downloading interface
-* Copernicus Marine data integration
-* Global map visualization tools
-* KML file generation for Google Earth
-* Comprehensive I/O utilities
-
-Installation
-------------
-
-.. code-block:: bash
-
-   pip install remote-sensing
-
 Contents
 --------
 

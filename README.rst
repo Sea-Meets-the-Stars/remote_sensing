@@ -39,8 +39,8 @@ Clone the repository and install in development mode:
 
 .. code-block:: bash
 
-    git clone https://github.com/username/remote-sensing.git
-    cd remote-sensing
+    git clone https://github.com/Sea-Meets-the-Stars/remote_sensing.git
+    cd remote_sensing
     pip install -e .
 
 Basic Usage

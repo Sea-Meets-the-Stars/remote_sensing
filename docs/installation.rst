@@ -8,7 +8,7 @@ Prerequisites
 
 Before installing, ensure you have the following:
 
-* Python 3.8 or later
+* Python 3.11 or later
 * pip (Python package installer)
 * numpy
 * matplotlib
@@ -20,18 +20,19 @@ Before installing, ensure you have the following:
 Basic Installation
 ----------------
 
-You can install the Remote Sensing package using pip:
+You may find it best to start from a fresh `conda`_ install:
+
+.. code-block:: console
+
+    conda create -n remote python=3.11
+    conda activate remote
+
+Currently one has to install from GitHub: 
 
 .. code-block:: bash
 
-   pip install remote-sensing
-
-For development installation:
-
-.. code-block:: bash
-
-   git clone https://github.com/username/remote-sensing.git
-   cd remote-sensing
+   git clone https://github.com/Sea-Meets-the-Stars/remote_sensing.git
+   cd remote_sensing
    pip install -e .
 
 Dependencies
@@ -60,6 +61,10 @@ For PODAAC downloads:
    requests
    earthdata-download
 
+For Copernicus downloads:
+
+`Copernicus marine package <https://pypi.org/project/copernicusmarine/>`
+
 Environment Variables
 ------------------
 
@@ -81,30 +86,21 @@ For PODAAC downloads, set the following:
           login your-username
           password your-password
 
+For Copernicus downloads, set the following:
+
+   .. code-block:: bash
+
+      export COPERNICUSMARINE_SERVICE_USERNAME=your_username
+      export COPERNICUSMARINE_SERVICE_PASSWORD=your_password
+
+
 Troubleshooting
 -------------
 
 Common Issues
 ~~~~~~~~~~~~
 
-1. HEALPix Installation
-   
-   If you encounter issues installing healpy, try:
-
-   .. code-block:: bash
-
-      conda install healpy
-
-2. Cartopy Installation
-   
-   On Ubuntu/Debian, you may need:
-
-   .. code-block:: bash
-
-      sudo apt-get install libproj-dev proj-data proj-bin
-      sudo apt-get install libgeos-dev
-
-3. PODAAC Authentication
+1. PODAAC Authentication
    
    If you get authentication errors, verify:
    
