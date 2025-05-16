@@ -26,6 +26,7 @@ setup_keywords['install_requires'] = [
     'healpy', 'copernicusmarine',  
     'importlib-metadata', 'netcdf4', 
     'podaac-data-subscriber',
+    'setuptools-scm',  # for versioning
     'pytest', 'simplekml']
 setup_keywords['zip_safe'] = False
 setup_keywords['use_2to3'] = False

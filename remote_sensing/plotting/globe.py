@@ -79,7 +79,11 @@ def plot_lons_lats_vals(lons, lats, values,
     else:
         cm = plt.get_cmap(cmap)
         # Cut
-        good = np.invert(values.mask)
+        if hasattr(values, 'mask'):
+            # Masked array
+            good = np.invert(values.mask)
+        else:
+            good = np.ones(lons.shape, dtype=bool)
         img = ax.scatter(x=lons[good],
             y=lats[good],
             c=values[good], 
