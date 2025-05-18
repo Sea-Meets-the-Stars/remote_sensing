@@ -1,11 +1,33 @@
 import numpy as np
 from matplotlib import pyplot as plt
+
 import xarray
+import cartopy.crs as ccrs
+import cartopy.feature as cfeature
+from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 
 from remote_sensing.plotting import globe
-from remote_sensing.plotting import utils as putils
 from remote_sensing.netcdf import utils as nc_utils
 from remote_sensing.netcdf import sst as nc_sst
+
+from IPython import embed
+
+def add_gridlines(ax):
+    
+    gl = ax.gridlines(crs=ccrs.PlateCarree(), linewidth=1, 
+        color='black', alpha=0.5, linestyle=':', draw_labels=True)
+    gl.xlabels_top = False
+    gl.ylabels_left = True
+    gl.ylabels_right=False
+    gl.xlines = True
+    gl.xformatter = LONGITUDE_FORMATTER
+    gl.yformatter = LATITUDE_FORMATTER
+    gl.xlabel_style = {'color': 'black'}# 'weight': 'bold'}
+    gl.ylabel_style = {'color': 'black'}# 'weight': 'bold'}
+    #gl.xlocator = mticker.FixedLocator([-180., -160, -140, -120, -60, -20.])
+    #gl.xlocator = mticker.FixedLocator([-240., -180., -120, -65, -60, -55, 0, 60, 120.])
+    #gl.ylocator = mticker.FixedLocator([0., 15., 30., 45, 60.])
+
 
 def set_fontsize(ax, fsz):
     """
@@ -26,7 +48,8 @@ def set_fontsize(ax, fsz):
 def show_one(one_file:str, variable:str, lat_min:float=None, 
              lat_max:float=None, lon_min:float=None, lon_max:float=None, 
              projection:str='mollweide', ssize:float=1., cmap:str=None, 
-             vmin:float=None, vmax:float=None, itime:int=0):
+             vmin:float=None, vmax:float=None, itime:int=0,
+             land:bool=False):
     """
     Display a variable from a NetCDF file on a map with optional spatial and 
     visual customizations.
@@ -57,6 +80,9 @@ def show_one(one_file:str, variable:str, lat_min:float=None,
         Maximum value for the color scale. Default is None.
     itime : int, optional
         Time index to select if the variable has a time dimension. Default is 0.
+    land : bool, optional
+        If True, overlays a land mask on the plot. Default is False.
+
     Raises:
     -------
     IOError
@@ -123,13 +149,26 @@ def show_one(one_file:str, variable:str, lat_min:float=None,
 
         # 
         da = da.sel({lat:lat_slice, lon:lon_slice})
-        da.plot()
-        # Fuss
-        fig = plt.gcf()
-        fig.set_size_inches(15, 10)
-        ax = plt.gca()
-        putils.set_fontsize(ax, 18.)
+
+        # Create a figure with projection
+        fig = plt.figure(figsize=(15, 10))
+        ax = plt.axes(projection=ccrs.PlateCarree())
+
+        # Plot your data
+        da.plot(ax=ax, transform=ccrs.PlateCarree(), cmap=cmap, vmin=vmin, vmax=vmax)
+
+        # Add coastlines
+        ax.coastlines()
+        add_gridlines(ax)
+
+        # Optional: Add more geographic features
+        ax.add_feature(cfeature.BORDERS, linestyle=':')
+        ax.add_feature(cfeature.LAND, alpha=0.5)
+        ax.add_feature(cfeature.OCEAN)
+
+        set_fontsize(ax, 18.)
         plt.show()
+
         # Finish
         return
     else:
@@ -168,6 +207,10 @@ def show_one(one_file:str, variable:str, lat_min:float=None,
         kwargs['vmin'] = vmin
     if vmax is not None:
         kwargs['vmax'] = vmax
+    if land:
+        kwargs['land'] = True
+
+    embed(header='178 of utils')
 
     # Plot
     ax, im = globe.plot_lons_lats_vals(

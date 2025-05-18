@@ -23,7 +23,7 @@ setup_keywords['requires'] = ['Python (>3.10.0)']
 setup_keywords['install_requires'] = [
     'seaborn', 'pyarrow', 'scikit-learn', 'scikit-image', 'tqdm', 
     'cftime', 'bokeh', 'xarray', 'h5netcdf', 
-    'healpy', 'copernicusmarine',  
+    'healpy', 'copernicusmarine', 'pyproj', 
     'importlib-metadata', 'netcdf4', 
     'podaac-data-subscriber',
     'setuptools-scm',  # for versioning

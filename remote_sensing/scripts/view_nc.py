@@ -9,10 +9,10 @@ def parser(options=None):
     parser.add_argument("netcdf_file", type=str, help="File+path to NetCDF file.  If you use a wildcard, e.g. *.nc, all files will be shown, one by one")
     parser.add_argument("variable", type=str, help="Variable to view (or a 'shortcut', e.g. sst)")
     # Optional arguments
-    parser.add_argument("--lat_min", type=float, help="Minimum latitude")
-    parser.add_argument("--lat_max", type=float, help="Maximum latitude")
-    parser.add_argument("--lon_min", type=float, help="Minimum longitude")
-    parser.add_argument("--lon_max", type=float, help="Maximum longitude")  
+    parser.add_argument("--lat_min", type=float, help="Minimum latitude (deg)")
+    parser.add_argument("--lat_max", type=float, help="Maximum latitude (deg)")
+    parser.add_argument("--lon_min", type=float, help="Minimum longitude (deg)")
+    parser.add_argument("--lon_max", type=float, help="Maximum longitude (deg)")  
     parser.add_argument("--projection", type=str, default='mollweide', help="Projection for the plot; (mollweide, platecarree)")
     parser.add_argument("--ssize", type=float, default=1., help="Size of the points")
     parser.add_argument("--cmap", type=str, help="Color map")
@@ -20,6 +20,8 @@ def parser(options=None):
     parser.add_argument("--vmax", type=float, help="Lower bound of the colorbar")
 
     parser.add_argument("--itime", type=int, default=0, help="Time index to view, if applicable")
+    # Land?
+    parser.add_argument("--land", action='store_true', help="Overlay land mask")
 
     if options is None:
         pargs = parser.parse_args()

@@ -4,7 +4,8 @@ import numpy as np
 
 from matplotlib import pyplot as plt
 import cartopy.crs as ccrs
-from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
+
+from remote_sensing.plotting import utils as putils
 
 from IPython import embed
 
@@ -22,6 +23,7 @@ def plot_lons_lats_vals(lons, lats, values,
                marker:str=None,
                cmap='viridis', show=False,
                lon_lim:tuple=None, lat_lim:tuple=None,
+               land:bool=False,
                ax=None, savefig:str=None,
                transparent:bool=True):
     """Generate a global map of mean LL of the input
@@ -47,6 +49,7 @@ def plot_lons_lats_vals(lons, lats, values,
         ax ([type], optional): Axis to use.  Defaults to None.
         savefig (str, optional): If not None, save the figure to this file.  Defaults to None
         transparent (bool, optional): Make the background transparent.  Defaults to True.
+        land (bool, optional): Overlay land mask.  Defaults to False.
 
     Returns:
         matplotlib.Axis: axis holding the plot
@@ -101,23 +104,11 @@ def plot_lons_lats_vals(lons, lats, values,
         cb.ax.tick_params(labelsize=cb_tsize)
 
     # Coast lines
-    if not tricontour:
+    if not tricontour or land:
+        embed(header="Plotting coastlines")
         ax.coastlines(zorder=10)
         ax.set_global()
-    
-        gl = ax.gridlines(crs=ccrs.PlateCarree(), linewidth=1, 
-            color='black', alpha=0.5, linestyle=':', draw_labels=True)
-        gl.xlabels_top = False
-        gl.ylabels_left = True
-        gl.ylabels_right=False
-        gl.xlines = True
-        gl.xformatter = LONGITUDE_FORMATTER
-        gl.yformatter = LATITUDE_FORMATTER
-        gl.xlabel_style = {'color': 'black'}# 'weight': 'bold'}
-        gl.ylabel_style = {'color': 'black'}# 'weight': 'bold'}
-        #gl.xlocator = mticker.FixedLocator([-180., -160, -140, -120, -60, -20.])
-        #gl.xlocator = mticker.FixedLocator([-240., -180., -120, -65, -60, -55, 0, 60, 120.])
-        #gl.ylocator = mticker.FixedLocator([0., 15., 30., 45, 60.])
+        putils.add_gridlines(ax)
 
     # Limits
     if lon_lim is not None:
