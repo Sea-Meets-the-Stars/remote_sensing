@@ -27,6 +27,52 @@ def show_one(one_file:str, variable:str, lat_min:float=None,
              lat_max:float=None, lon_min:float=None, lon_max:float=None, 
              projection:str='mollweide', ssize:float=1., cmap:str=None, 
              vmin:float=None, vmax:float=None, itime:int=0):
+    """
+    Display a variable from a NetCDF file on a map with optional spatial and 
+    visual customizations.
+    Parameters:
+    -----------
+    one_file : str
+        Path to the NetCDF file to be visualized.
+    variable : str
+        Name of the variable to plot. If 'sst', attempts to find a sea surface 
+        temperature variable.
+    lat_min : float, optional
+        Minimum latitude for the region of interest. Default is None.
+    lat_max : float, optional
+        Maximum latitude for the region of interest. Default is None.
+    lon_min : float, optional
+        Minimum longitude for the region of interest. Default is None.
+    lon_max : float, optional
+        Maximum longitude for the region of interest. Default is None.
+    projection : str, optional
+        Map projection to use for plotting. Default is 'mollweide'.
+    ssize : float, optional
+        Marker size for the plot. Default is 1.0.
+    cmap : str, optional
+        Colormap to use for the plot. Default is None.
+    vmin : float, optional
+        Minimum value for the color scale. Default is None.
+    vmax : float, optional
+        Maximum value for the color scale. Default is None.
+    itime : int, optional
+        Time index to select if the variable has a time dimension. Default is 0.
+    Raises:
+    -------
+    IOError
+        If the specified variable is not found in the NetCDF file.
+    ValueError
+        If the latitude or longitude dimensions have an unsupported shape.
+    Notes:
+    ------
+    - The function supports both 1D and 2D latitude/longitude coordinates.
+    - If latitude and longitude bounds are provided, the data is sliced 
+        accordingly.
+    - The function uses a masked array to handle invalid or NaN values in the 
+        data.
+    - The plot is displayed using matplotlib and optionally customized with 
+        the provided parameters.
+    """
 
 
     # Load 
