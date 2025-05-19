@@ -49,7 +49,7 @@ def show_one(one_file:str, variable:str, lat_min:float=None,
              lat_max:float=None, lon_min:float=None, lon_max:float=None, 
              projection:str='mollweide', ssize:float=1., cmap:str=None, 
              vmin:float=None, vmax:float=None, itime:int=0,
-             land:bool=False):
+             land:bool=False, outfile:str=None):
     """
     Display a variable from a NetCDF file on a map with optional spatial and 
     visual customizations.
@@ -167,10 +167,13 @@ def show_one(one_file:str, variable:str, lat_min:float=None,
         ax.add_feature(cfeature.OCEAN)
 
         set_fontsize(ax, 18.)
-        plt.show()
+        if outfile is not None:
+            plt.savefig(outfile, bbox_inches='tight', dpi=300)
+        else:
+            plt.show()
 
         # Finish
-        return
+        return ax
     else:
         raise ValueError("Bad lat/lon shape")
 
@@ -209,8 +212,6 @@ def show_one(one_file:str, variable:str, lat_min:float=None,
         kwargs['vmax'] = vmax
     if land:
         kwargs['land'] = True
-
-    embed(header='178 of utils')
 
     # Plot
     ax, im = globe.plot_lons_lats_vals(
