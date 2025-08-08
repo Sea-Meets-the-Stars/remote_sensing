@@ -25,7 +25,8 @@ setup_keywords['install_requires'] = [
     'cftime', 'bokeh', 'xarray', 'h5netcdf', 
     'healpy', 'copernicusmarine', 'pyproj', 
     'importlib-metadata', 'netcdf4', 
-    'podaac-data-subscriber',
+    'podaac-data-subscriber', 'shapely', 'cartopy',
+    'earthaccess', 'pandas', 'numpy', 'scipy',
     'setuptools-scm',  # for versioning
     'pytest', 'simplekml']
 setup_keywords['zip_safe'] = False
