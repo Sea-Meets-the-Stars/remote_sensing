@@ -8,6 +8,27 @@ import pandas
 from shapely.geometry import Polygon, Point
 from shapely.ops import orient
 
+def fix_antimeridian_polygon(coords):
+    """Fix polygon that crosses the antimeridian by adjusting longitudes"""
+    fixed_coords = []
+    
+    for i, (lon, lat) in enumerate(coords):
+        if i > 0:
+            prev_lon = fixed_coords[-1][0]
+            
+            # If longitude jump > 180°, we likely crossed antimeridian
+            if abs(lon - prev_lon) > 180:
+                if lon > 0 and prev_lon < 0:
+                    # Crossing from negative to positive - subtract 360 from positive
+                    lon = lon - 360
+                elif lon < 0 and prev_lon > 0:
+                    # Crossing from positive to negative - add 360 to negative
+                    lon = lon + 360
+                    
+        fixed_coords.append((lon, lat))
+    
+    return fixed_coords
+
 
 def extract_spatial_extent(granule:earthaccess.results.DataGranule|dict):
     """
@@ -98,7 +119,7 @@ def extract_spatial_extent(granule:earthaccess.results.DataGranule|dict):
     
     return spatial_info
 
-def create_shapely_geometries(spatial_info):
+def create_shapely_geometries(spatial_info, fix_antimeridian:bool=False):
     """
     Convert spatial extent information to Shapely geometry objects.
     
@@ -123,6 +144,10 @@ def create_shapely_geometries(spatial_info):
         if gpolygon['boundary_points']:
             # Create exterior ring
             exterior = gpolygon['boundary_points']
+
+            # Fix antimeridian crossing if required
+            if fix_antimeridian:
+                exterior = fix_antimeridian_polygon(exterior)
             
             # Create holes (exclusive zones)
             holes = gpolygon['exclusive_zones'] if gpolygon['exclusive_zones'] else None
@@ -183,7 +208,7 @@ def granules_to_dict(granules:list):
     # Return
     return full_dict
 
-def build_granule_table(granules:dict):
+def build_granule_table(granules:dict, fix_antimeridian:bool=False):
 
     # Generate a table of interesting bits and pieces
     df = pandas.DataFrame()
@@ -197,7 +222,7 @@ def build_granule_table(granules:dict):
         granule = granules[key]
         # Polygon
         spt = extract_spatial_extent(granule)
-        dshap = create_shapely_geometries(spt)
+        dshap = create_shapely_geometries(spt, fix_antimeridian=fix_antimeridian)
         polygons.append(dshap['polygons'][0] if dshap['polygons'] else None)
 
         # Time
