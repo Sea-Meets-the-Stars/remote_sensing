@@ -105,7 +105,7 @@ def plot_lons_lats_vals(lons, lats, values,
 
     # Coast lines
     if not tricontour or land:
-        embed(header="Plotting coastlines")
+        #embed(header="Plotting coastlines")
         ax.coastlines(zorder=10)
         ax.set_global()
         putils.add_gridlines(ax)
