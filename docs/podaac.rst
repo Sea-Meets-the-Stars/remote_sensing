@@ -11,7 +11,7 @@ Setup
 =====
 
 To download data from the PODAAC, you will need to install the
-`earthdata-download <
+`earthdata-download <https://github.com/nsidc/earthdata-download>`_
 
 Collections
 ===========
