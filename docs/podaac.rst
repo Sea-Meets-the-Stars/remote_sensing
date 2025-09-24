@@ -7,6 +7,12 @@ PODAAC Downloads
 This document describes collections available from the
 Physical Oceanography Distributed Active Archive Center (PODAAC).
 
+Setup
+=====
+
+To download data from the PODAAC, you will need to install the
+`earthdata-download <https://github.com/nsidc/earthdata-download>`_
+
 Collections
 ===========
 
@@ -39,6 +45,10 @@ SST data size, mitigated warm biases in the high latitudes, and
 improved clear-sky mask.
 
 `Read more here <https://podaac.jpl.nasa.gov/announcements/2023-11-16-NOAA-GHRSST-L2P/L3U-N21/VIIRS-sub-skin-SST-v2.80-datasets>``
+
+And there is more here too:
+
+`NOAA website <https://coastwatch.noaa.gov/cwn/products/acspo-global-sst-viirs.html>`
 
 
 SSH
