@@ -82,6 +82,9 @@ def show_one(one_file:str, variable:str, lat_min:float=None,
         Time index to select if the variable has a time dimension. Default is 0.
     land : bool, optional
         If True, overlays a land mask on the plot. Default is False.
+    outfile : str, optional
+        If provided, saves the plot to this file instead of displaying it. 
+        Default is None.
 
     Raises:
     -------
