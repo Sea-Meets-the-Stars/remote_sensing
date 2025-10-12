@@ -6,6 +6,7 @@ from matplotlib import pyplot as plt
 import cartopy.crs as ccrs
 
 from remote_sensing.plotting import utils as putils
+from remote_sensing.healpix import utils as hputils
 
 from IPython import embed
 
@@ -128,3 +129,29 @@ def plot_lons_lats_vals(lons, lats, values,
         plt.show()
 
     return ax, img
+
+def healpix_map(lats, lons, vals,
+                nside:int=64,
+                **kwargs):
+    """ Generate a healpix map from lats, lons, and values.
+
+    Args:
+        lats (np.ndarray): Latitudes
+        lons (np.ndarray): Longitudes
+        vals (np.ndarray): Values
+        nside (int, optional): Healpix nside.  Defaults to 64.
+
+    Returns:
+        matplotlib.Axis: axis holding the plot
+        matplotlib.image: image object
+    """
+    hp_counts, hp_values, hp_lons, hp_lats, nside = \
+        hputils.arrays_to_healpix(
+            lats, lons, vals, nside=nside)
+
+    # Plot
+    ax, img = plot_lons_lats_vals(
+        hp_lons, hp_lats, hp_values,
+        ssize=10., **kwargs)
+
+    return ax, img  

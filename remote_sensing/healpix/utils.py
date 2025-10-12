@@ -150,7 +150,7 @@ def arrays_to_healpix(lat:np.ndarray,
     gd = np.isfinite(lats) & np.isfinite(lons) & finite
 
     idx_all[gd] = healpy.pixelfunc.ang2pix(
-        nside, theta[gd], phi[gd])
+            nside, theta[gd], phi[gd])
 
     # Count events
     all_events = np.ma.masked_array(np.zeros(npix_hp, dtype='int'))
