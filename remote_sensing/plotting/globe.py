@@ -112,10 +112,16 @@ def plot_lons_lats_vals(lons, lats, values,
         putils.add_gridlines(ax)
 
     # Limits
+    extent = [None]*4
     if lon_lim is not None:
-        ax.set_xlim(lon_lim)
+        extent[0] = lon_lim[0]
+        extent[1] = lon_lim[1]
     if lat_lim is not None:
-        ax.set_ylim(lat_lim)
+        extent[2] = lat_lim[0]
+        extent[3] = lat_lim[1]
+
+    if any([e is not None for e in extent]):
+        ax.set_extent(extent, crs=tform)
 
     plt.tight_layout()
 
@@ -134,6 +140,10 @@ def healpix_map(lats, lons, vals,
                 nside:int=64,
                 **kwargs):
     """ Generate a healpix map from lats, lons, and values.
+
+    The routine first converts the input lats, lons, and vals
+    into healpix format, then calls 
+    plot_lons_lats_vals() to do the plotting.
 
     Args:
         lats (np.ndarray): Latitudes.  Can be 2D
