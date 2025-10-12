@@ -136,9 +136,9 @@ def healpix_map(lats, lons, vals,
     """ Generate a healpix map from lats, lons, and values.
 
     Args:
-        lats (np.ndarray): Latitudes
-        lons (np.ndarray): Longitudes
-        vals (np.ndarray): Values
+        lats (np.ndarray): Latitudes.  Can be 2D
+        lons (np.ndarray): Longitudes.  Can be 2D
+        vals (np.ndarray): Values.  Can be 2D
         nside (int, optional): Healpix nside.  Defaults to 64.
 
     Returns:
