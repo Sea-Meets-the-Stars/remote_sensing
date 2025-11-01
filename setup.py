@@ -27,7 +27,7 @@ setup_keywords['install_requires'] = [
     'importlib-metadata', 'netcdf4', 
     'podaac-data-subscriber', 'shapely', 'cartopy',
     'setuptools-scm',  # for versioning
-    'pytest', 'simplekml']
+    'pytest', 'simplekml', 'earthaccess']
 setup_keywords['zip_safe'] = False
 setup_keywords['use_2to3'] = False
 setup_keywords['packages'] = find_packages()
