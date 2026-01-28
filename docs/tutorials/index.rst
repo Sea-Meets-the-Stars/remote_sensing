@@ -10,3 +10,4 @@ This section provides detailed tutorials for common tasks using the Remote Sensi
    healpix_mapping
    visualization
    podaac_download
+   modis_oc

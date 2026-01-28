@@ -23,6 +23,7 @@ Contents
 
    copernicus
    podaac
+   earthdata
 
 .. toctree::
    :maxdepth: 2
@@ -31,6 +32,7 @@ Contents
    api/healpix
    api/sst
    api/ssh
+   api/oc
    api/visualization
    api/download
    api/io
