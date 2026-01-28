@@ -3,7 +3,7 @@
 import numpy as np
 import xarray
 
-from . import sst
+from . import sst, oc
 
 lat_coords = ['lat', 'latitude']
 lon_coords = ['lon', 'longitude']
@@ -25,28 +25,32 @@ def find_coord(ds:xarray.Dataset, coord:str):
     return None
             
 
-def find_variable(ds:xarray.Dataset, 
+def find_variable(ds:xarray.Dataset,
                   vtype:str,
                   verbose:bool=False):
     """
-    Find the SST variable in the dataset
+    Find the variable in the dataset
 
     Parameters
     ----------
     ds : xarray.Dataset
+    vtype : str
+        Variable type: 'sst' or 'rrs'
     verbose : bool, optional
 
     Returns
     -------
-    str or None
-        Variable name
+    str or dict or None
+        Variable name (for SST) or dict of variables (for Rrs)
     """
 
     # Check for SST
     if vtype == 'sst':
         return sst.find_variable(ds, verbose=verbose)
+    elif vtype == 'rrs':
+        return oc.find_rrs_variables(ds, verbose=verbose)
     else:
-        raise IOError("Bad vtype")
+        raise IOError(f"Bad vtype: {vtype}. Use 'sst' or 'rrs'")
 
     return None
 
@@ -59,19 +63,22 @@ def gen_mask_for_dataset(ds:xarray.Dataset, variable:str):
     ds : xarray.Dataset
         Dataset containing the variable
     variable : str
-        Variable name
+        Variable name (e.g., 'sea_surface_temperature', 'Rrs_555')
 
     Returns
     -------
     mask : numpy.ndarray
-        Mask for the variable
+        Boolean mask where True = bad/masked pixel
     """
     mask = None
 
-    # Quality control
+    # Quality control for SST
     if variable in sst.variables:
         mask = sst.quality_control(ds)
-    
+    # Quality control for ocean color (Rrs)
+    elif variable.startswith('Rrs_'):
+        mask = oc.quality_control(ds)
+
     return mask
 
 

@@ -266,7 +266,7 @@ def build_granule_table(granules:dict, fix_antimeridian:bool=False):
 def plot_spatial_extent(granule, granule_title="Data Granule", show:bool=True):
     """
     Plot the spatial extent using matplotlib and cartopy.
-    
+
     Parameters:
     -----------
     granule : dict
@@ -275,78 +275,223 @@ def plot_spatial_extent(granule, granule_title="Data Granule", show:bool=True):
         Title for the plot
     """
     spatial_info = extract_spatial_extent(granule)
-    geometries = create_shapely_geometries(spatial_info, 
+    geometries = create_shapely_geometries(spatial_info,
                                                  fix_antimeridian=True)
 
     fig = plt.figure(figsize=(12, 8))
-    
+
     # Determine bounds for the plot
     all_coords = []
     for gpolygon in spatial_info['gpolygons']:
         all_coords.extend(gpolygon['boundary_points'])
     for rect in spatial_info['bounding_rectangles']:
-        if all(coord is not None for coord in [rect['west'], rect['east'], 
+        if all(coord is not None for coord in [rect['west'], rect['east'],
                                               rect['north'], rect['south']]):
             all_coords.extend([
                 (rect['west'], rect['south']),
                 (rect['east'], rect['north'])
             ])
     all_coords.extend(spatial_info['points'])
-    
+
     if not all_coords:
         print("No coordinates found to plot")
         return fig
-    
+
     # Calculate bounds with buffer
     lons = [coord[0] for coord in all_coords]
     lats = [coord[1] for coord in all_coords]
     lon_buffer = (max(lons) - min(lons)) * 0.1 if max(lons) != min(lons) else 1
     lat_buffer = (max(lats) - min(lats)) * 0.1 if max(lats) != min(lats) else 1
-    
+
     # Create map with cartopy
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.set_extent([
         min(lons) - lon_buffer, max(lons) + lon_buffer,
         min(lats) - lat_buffer, max(lats) + lat_buffer
     ], ccrs.PlateCarree())
-    
+
     # Add map features
     ax.add_feature(cfeature.COASTLINE, alpha=0.8)
     ax.add_feature(cfeature.BORDERS, alpha=0.8)
     ax.add_feature(cfeature.OCEAN, alpha=0.3)
     ax.add_feature(cfeature.LAND, alpha=0.3)
     ax.gridlines(draw_labels=True, alpha=0.5)
-    
+
     # Plot polygons
     for i, polygon in enumerate(geometries['polygons']):
         x, y = polygon.exterior.xy
         ax.plot(x, y, 'r-', linewidth=2, label=f'GPolygon {i+1}' if i == 0 else "")
         ax.fill(x, y, 'red', alpha=0.2)
-        
+
         # Plot holes
         for hole in polygon.interiors:
             x, y = hole.xy
             ax.plot(x, y, 'b-', linewidth=1)
             ax.fill(x, y, 'white', alpha=0.8)
-    
+
     # Plot bounding rectangles
     for i, rect_poly in enumerate(geometries['rectangles']):
         x, y = rect_poly.exterior.xy
         ax.plot(x, y, 'g--', linewidth=2, label=f'Bounding Box {i+1}' if i == 0 else "")
-    
+
     # Plot points
     for i, point in enumerate(geometries['points']):
-        ax.plot(point.x, point.y, 'ko', markersize=8, 
+        ax.plot(point.x, point.y, 'ko', markersize=8,
                label='Points' if i == 0 else "")
-    
+
     # Plot lines
     for i, line in enumerate(geometries['lines']):
         x, y = line.xy
         ax.plot(x, y, 'm-', linewidth=2, label=f'Line {i+1}' if i == 0 else "")
-    
+
     plt.title(f'{granule_title}\nSpatial Extent Visualization')
     plt.legend(loc='upper right')
     if show:
         plt.show()
-    
+
     return fig
+
+
+# MODIS Ocean Color specific functions
+
+def query_modis_oc(time_range:tuple=None, bbox:tuple=None, cloud_cover:tuple=None,
+                   nrt:bool=False, verbose:bool=True):
+    """
+    Query MODIS Aqua Level-2 ocean color data from OB.DAAC.
+
+    Parameters:
+    -----------
+    time_range : tuple, optional
+        Temporal range as (start, end) in format 'YYYY-MM-DD' or datetime
+        Example: ('2024-01-15', '2024-01-16')
+    bbox : tuple, optional
+        Bounding box as (lon_min, lat_min, lon_max, lat_max)
+        Example: (127, 18, 134, 23) for Japan region
+    cloud_cover : tuple, optional
+        Cloud cover range as (min_percent, max_percent)
+        Example: (0, 50) for up to 50% cloud cover
+    nrt : bool, default=False
+        If True, query near-real-time data (MODISA_L2_OC_NRT)
+        If False, query standard processed data (MODISA_L2_OC)
+    verbose : bool, default=True
+        Print query information
+
+    Returns:
+    --------
+    list : List of earthaccess DataGranule objects
+
+    Notes:
+    ------
+    - MODIS Aqua L2 OC data is distributed by OB.DAAC (Ocean Biology DAAC)
+    - Collection short names:
+        * Standard: 'MODISA_L2_OC' (R2022.0)
+        * Near-Real-Time: 'MODISA_L2_OC_NRT' (R2022.0)
+    - L2 data contains remote sensing reflectance (Rrs) at multiple bands:
+        412, 443, 469, 488, 531, 547, 555, 645, 667, 678 nm
+    - Data requires EarthData login (use earthaccess.login() first)
+
+    Example:
+    --------
+    >>> import earthaccess
+    >>> earthaccess.login()
+    >>> from remote_sensing.download import earthaccess as ea
+    >>> granules = ea.query_modis_oc(
+    ...     time_range=('2024-01-15', '2024-01-16'),
+    ...     bbox=(127, 18, 134, 23),
+    ...     cloud_cover=(0, 50)
+    ... )
+    >>> print(f"Found {len(granules)} granules")
+    """
+    # Select collection based on NRT flag
+    collection = 'MODISA_L2_OC_NRT' if nrt else 'MODISA_L2_OC'
+
+    if verbose:
+        print(f"Querying {collection} from OB.DAAC")
+        if time_range:
+            print(f"  Time range: {time_range[0]} to {time_range[1]}")
+        if bbox:
+            print(f"  Bounding box: lon=[{bbox[0]}, {bbox[2]}], lat=[{bbox[1]}, {bbox[3]}]")
+        if cloud_cover:
+            print(f"  Cloud cover: {cloud_cover[0]}-{cloud_cover[1]}%")
+
+    # Build query parameters
+    query_params = {
+        'short_name': collection
+    }
+
+    if time_range:
+        query_params['temporal'] = time_range
+
+    if bbox:
+        query_params['bounding_box'] = bbox
+
+    if cloud_cover:
+        query_params['cloud_cover'] = cloud_cover
+
+    # Execute query
+    try:
+        results = earthaccess.search_data(**query_params)
+
+        if verbose:
+            print(f"Found {len(results)} granules")
+
+        return results
+
+    except Exception as e:
+        print(f"Error querying {collection}: {e}")
+        raise
+
+
+def download_modis_oc(granules:list, download_dir:str=None, verbose:bool=True):
+    """
+    Download MODIS Aqua L2 ocean color granules.
+
+    Parameters:
+    -----------
+    granules : list
+        List of earthaccess DataGranule objects from query_modis_oc()
+    download_dir : str, optional
+        Directory to download files to. If None, uses './MODIS_L2_OC/'
+    verbose : bool, default=True
+        Print download progress
+
+    Returns:
+    --------
+    list : List of paths to downloaded files
+
+    Notes:
+    ------
+    - Files are NetCDF4/HDF5 format with .nc extension
+    - Standard naming: AQUA_MODIS.YYYYMMDDTHHMMSS.L2.OC.nc
+    - File size: typically 50-150 MB per granule
+    - Requires valid EarthData credentials
+
+    Example:
+    --------
+    >>> granules = query_modis_oc(time_range=('2024-01-15', '2024-01-16'))
+    >>> files = download_modis_oc(granules, download_dir='./data/MODIS/')
+    """
+    import os
+
+    # Set default download directory
+    if download_dir is None:
+        download_dir = './MODIS_L2_OC/'
+
+    # Create directory if it doesn't exist
+    os.makedirs(download_dir, exist_ok=True)
+
+    if verbose:
+        print(f"Downloading {len(granules)} granules to {download_dir}")
+
+    try:
+        # Download files
+        files = earthaccess.download(granules, download_dir)
+
+        if verbose:
+            print(f"Successfully downloaded {len(files)} files")
+
+        return files
+
+    except Exception as e:
+        print(f"Error downloading files: {e}")
+        raise
