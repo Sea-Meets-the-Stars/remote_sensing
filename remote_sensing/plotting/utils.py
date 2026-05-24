@@ -53,6 +53,7 @@ def show_one(one_file:str, variable:str, lat_min:float=None,
     """
     Display a variable from a NetCDF file on a map with optional spatial and 
     visual customizations.
+
     Parameters:
     -----------
     one_file : str

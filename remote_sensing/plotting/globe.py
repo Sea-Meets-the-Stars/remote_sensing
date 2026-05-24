@@ -6,6 +6,7 @@ from matplotlib import pyplot as plt
 import cartopy.crs as ccrs
 
 from remote_sensing.plotting import utils as putils
+from remote_sensing.healpix import utils as hputils
 
 from IPython import embed
 
@@ -111,10 +112,16 @@ def plot_lons_lats_vals(lons, lats, values,
         putils.add_gridlines(ax)
 
     # Limits
+    extent = [None]*4
     if lon_lim is not None:
-        ax.set_xlim(lon_lim)
+        extent[0] = lon_lim[0]
+        extent[1] = lon_lim[1]
     if lat_lim is not None:
-        ax.set_ylim(lat_lim)
+        extent[2] = lat_lim[0]
+        extent[3] = lat_lim[1]
+
+    if any([e is not None for e in extent]):
+        ax.set_extent(extent, crs=tform)
 
     plt.tight_layout()
 
@@ -128,3 +135,33 @@ def plot_lons_lats_vals(lons, lats, values,
         plt.show()
 
     return ax, img
+
+def healpix_map(lats, lons, vals,
+                nside:int=64,
+                **kwargs):
+    """ Generate a healpix map from lats, lons, and values.
+
+    The routine first converts the input lats, lons, and vals
+    into healpix format, then calls 
+    plot_lons_lats_vals() to do the plotting.
+
+    Args:
+        lats (np.ndarray): Latitudes.  Can be 2D
+        lons (np.ndarray): Longitudes.  Can be 2D
+        vals (np.ndarray): Values.  Can be 2D
+        nside (int, optional): Healpix nside.  Defaults to 64.
+
+    Returns:
+        matplotlib.Axis: axis holding the plot
+        matplotlib.image: image object
+    """
+    hp_counts, hp_values, hp_lons, hp_lats, nside = \
+        hputils.arrays_to_healpix(
+            lats, lons, vals, nside=nside)
+
+    # Plot
+    ax, img = plot_lons_lats_vals(
+        hp_lons, hp_lats, hp_values,
+        ssize=10., **kwargs)
+
+    return ax, img  

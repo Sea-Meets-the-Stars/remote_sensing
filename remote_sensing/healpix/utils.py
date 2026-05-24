@@ -150,7 +150,7 @@ def arrays_to_healpix(lat:np.ndarray,
     gd = np.isfinite(lats) & np.isfinite(lons) & finite
 
     idx_all[gd] = healpy.pixelfunc.ang2pix(
-        nside, theta[gd], phi[gd])
+            nside, theta[gd], phi[gd])
 
     # Count events
     all_events = np.ma.masked_array(np.zeros(npix_hp, dtype='int'))
@@ -163,12 +163,16 @@ def arrays_to_healpix(lat:np.ndarray,
     gdi = np.where(idx_all >= 0)[0]
 
     # Add em in
-    for ii in gdi:
-        jj = idx_all[ii]
-        # Count
-        all_events[jj] += 1
-        all_values[jj] += vals[ii]
-    #embed(header='155 of utils')
+    np.add.at(all_events, idx_all[gdi], 1)
+    np.add.at(all_values, idx_all[gdi], vals[gdi])
+
+    #for ii in gdi:
+    #    jj = idx_all[ii]
+    #    # Count
+    #    all_events[jj] += 1
+    #    all_values[jj] += vals[ii]
+    ##embed(header='155 of utils')
+
     # Mean
     pos = all_events > 0
     all_values[pos] /= all_events[pos]
